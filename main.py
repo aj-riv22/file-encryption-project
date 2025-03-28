@@ -16,3 +16,22 @@ cipher = AES.new(key, AES.MODE_CBC)
 ciphered_data = cipher.encrypt(pad(message, AES.block_size))
 
 print(ciphered_data)
+
+with open('encrypted.bin', 'wb') as f:
+    f.write(cipher.iv)
+    f.write(ciphered_data)
+
+with open('encrypted.bin', 'rb') as f:
+    iv = f.read(16)
+    decrypt_data = f.read()
+
+cipher = AES.new(key, AES.MODE_CBC, iv = iv)
+original = unpad(cipher.decrypt(decrypt_data), AES.block_size)
+print(original)
+
+with open('key.bin', 'wb') as f:
+    f.write(key)
+
+
+
+
