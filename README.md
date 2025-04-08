@@ -30,11 +30,16 @@ cd file-encryption-project
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
 
 3. install dependencies
-pip install -r requirements.txt
+```bash
+pip3 install -r requirements.txt
+```
 4. Set up environment variables:
+```bash
 echo "SECRET_KEY=$(python -c 'import os; print(os.urandom(24).hex())')" > .env
+```
 
 5. Run the application:
 ```bash
