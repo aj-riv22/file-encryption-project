@@ -37,5 +37,6 @@ pip install -r requirements.txt
 echo "SECRET_KEY=$(python -c 'import os; print(os.urandom(24).hex())')" > .env
 
 5. Run the application:
-python app.py
+```bash
+python3 run.py
 ```
