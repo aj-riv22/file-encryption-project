@@ -73,13 +73,12 @@ def decrypt(file_id):
     # Check if user has permission to decrypt this file
     if file.user_id != current_user.id and not FileShare.query.filter_by(
             file_id=file.id, shared_with_id=current_user.id).first():
-        flash('You do not have permission to decrypt this file.')
+        flash('You do not have permission to decrypt this file.', 'danger')
         return redirect(url_for('main.dashboard'))
     
     form = DecryptForm()
     if form.validate_on_submit():
         # Get the encrypted file path
-        # Change file.filename to file.encrypted_filename
         encrypted_path = os.path.join(current_app.config['UPLOAD_FOLDER'], file.encrypted_filename)
         
         # Generate path for decrypted file
@@ -87,23 +86,24 @@ def decrypt(file_id):
         decrypted_path = os.path.join(current_app.config['UPLOAD_FOLDER'], decrypted_filename)
         
         # Decrypt the file
-        integrity_verified = decrypt_file_aes(encrypted_path, decrypted_path, form.password.data)
+        success, message = decrypt_file_aes(encrypted_path, decrypted_path, form.password.data)
         
-        if integrity_verified:
-            # Log the action
+        if success:
+            # Log the decryption
             log = AuditLog(
                 user_id=current_user.id,
                 file_id=file.id,
-                action='decrypt',
+                action="Decrypted file",
                 ip_address=request.remote_addr
             )
             db.session.add(log)
             db.session.commit()
             
-            flash('File decrypted successfully! File integrity verified.')
+            flash('File decrypted successfully!', 'success')
             return send_file(decrypted_path, as_attachment=True, download_name=file.original_filename)
         else:
-            flash('Decryption failed or file integrity check failed. Please check your password.')
+            flash(message, 'danger')
+            return redirect(url_for('encryption.decrypt', file_id=file.id))
     
     return render_template('encryption/decrypt.html', title='Decrypt File', form=form, file=file)
 

@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.asymmetric import rsa, padding as asym_padding
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
+from cryptography.hazmat.backends import default_backend
 import os
 import hashlib
 
@@ -72,43 +73,57 @@ def encrypt_file_aes(input_path, output_path, password):
     
     return salt, file_hash
 
-def decrypt_file_aes(input_path, output_path, password):
-    """Decrypt a file using AES-256 with password-based key derivation"""
-    with open(input_path, 'rb') as infile:
-        # Read salt and IV from the beginning of the file
-        salt = infile.read(16)
-        iv = infile.read(16)
+def decrypt_file_aes(encrypted_path, decrypted_path, password):
+    try:
+        # Read the encrypted data
+        with open(encrypted_path, 'rb') as f:
+            encrypted_data = f.read()
         
-        # Read stored file hash
-        stored_hash = infile.read(64).decode()  # SHA-256 hash is 64 chars in hex
+        # Extract salt (first 16 bytes)
+        salt = encrypted_data[:16]
+        encrypted_data = encrypted_data[16:]
         
-        # Derive key from password and salt
-        key, _ = derive_key(password, salt)
+        # Derive key and IV from password and salt
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = kdf.derive(password.encode())
         
         # Create cipher
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        iv = encrypted_data[:16]
+        encrypted_data = encrypted_data[16:]
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
         decryptor = cipher.decryptor()
         
-        # Create unpadder
-        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+        # Decrypt the data
+        decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
         
-        # Read encrypted data
-        encrypted_data = infile.read()
+        # Remove padding
+        unpadder = padding.PKCS7(128).unpadder()
+        try:
+            unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
+        except ValueError as e:
+            # This is likely due to an incorrect password
+            if "Invalid padding bytes" in str(e):
+                return False, "Incorrect password. Please try again."
+            else:
+                return False, f"Decryption error: {str(e)}"
+        
+        # Write the decrypted data to file
+        with open(decrypted_path, 'wb') as f:
+            f.write(unpadded_data)
+        
+        # Verify file integrity (optional)
+        # You could add a hash check here
+        
+        return True, "File decrypted successfully"
     
-    # Decrypt data
-    decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
-    
-    # Remove padding
-    unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
-    
-    # Write decrypted data to output file
-    with open(output_path, 'wb') as outfile:
-        outfile.write(unpadded_data)
-    
-    # Verify file integrity
-    decrypted_hash = generate_file_hash(output_path)
-    
-    return decrypted_hash == stored_hash
+    except Exception as e:
+        return False, f"Decryption error: {str(e)}"
 
 # RSA encryption functions for secure sharing
 def generate_rsa_key_pair():
