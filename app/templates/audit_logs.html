@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-history me-2"></i>Audit Logs</h4>
+            </div>
+            <div class="card-body">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>File</th>
+                                <th>Action</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ log.user.username }}</td>
+                                <td>{{ log.file.original_filename }}</td>
+                                <td>
+                                    {% if log.action == 'encrypt' %}
+                                    <span class="badge bg-success">Encrypt</span>
+                                    {% elif log.action == 'decrypt' %}
+                                    <span class="badge bg-primary">Decrypt</span>
+                                    {% elif log.action == 'share' %}
+                                    <span class="badge bg-info">Share</span>
+                                    {% elif log.action == 'access_shared' %}
+                                    <span class="badge bg-warning">Access Shared</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ log.action }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.ip_address }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-history fa-4x mb-3 text-muted"></i>
+                    <h4>No audit logs</h4>
+                    <p>No file operations have been performed yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
