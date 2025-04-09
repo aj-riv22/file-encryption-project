@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File encryption</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>File Encryption Tool</h1>
+        <div class="content">
+            <p>Choose a file to encrypt</p>
+        </div>
+        <div class="controls">
+            <input type="file" id="fileInput" class="file-input">
+            <button onclick="encryptFile()">Encrypt File</button>
+            <button onclick="decryptFile()">Decrypt File</button>
+        </div>
+    </div>
+    <script>
+        function encryptFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                alert('File encryption functionality will be implemented here');
+            } else {
+                alert('Please select a file first');
+            }
+        }
+
+        function decryptFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                alert('File decryption functionality will be implemented here');
+            } else {
+                alert('Please select a file first');
+            }
+        }
+    </script>
+</body>
+</html> 
