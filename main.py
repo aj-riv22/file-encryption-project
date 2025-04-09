@@ -79,7 +79,7 @@ def main():
     # Handle key
     if args.key == 'gen':
         key = get_random_bytes(32)
-        print("🔑 Generated new key (hex):", key.hex())
+        print("Generated new key (hex):", key.hex())
     else:
         key = bytes.fromhex(args.key)
         if len(key) != 32:
@@ -100,7 +100,7 @@ def main():
             print("No output file specified.")
             return
         encrypt_file(input_file, output_file, key)
-        print(f"🔐 Encrypted '{input_file}' ➝ '{output_file}'")
+        print(f"Encrypted '{input_file}' ➝ '{output_file}'")
 
     elif choice == '2':
         input_file = pick_file("Select a file to decrypt")
@@ -112,7 +112,7 @@ def main():
             print("No output file specified.")
             return
         decrypt_file(input_file, output_file, key)
-        print(f"🔓 Decrypted '{input_file}' ➝ '{output_file}'")
+        print(f"Decrypted '{input_file}' ➝ '{output_file}'")
 
     else:
         print("Invalid choice.")
